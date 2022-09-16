@@ -6,16 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.19.2", features = ["full"] }
 
 [dependencies.windows]
-version = "0.29.0"
+version = "^0.39.0"
 features = [
-    "alloc",
-    "build",
     "Graphics_Capture",
+    "Graphics_Imaging",
     "Graphics_DirectX_Direct3D11",
     "Graphics_DirectX",
+    "Media_Ocr",
+    "Globalization",
     "Win32_Graphics_Direct3D12",
     "Win32_Graphics_Direct3D11on12",
     "Win32_Graphics_Direct3D11",
@@ -27,6 +28,7 @@ features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_UI_Shell",
     "Foundation",
+    "Foundation_Collections",
     "UI_Core",
     "ApplicationModel_Core",
     "Win32_System_Com",
