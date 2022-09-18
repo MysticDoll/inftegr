@@ -1,14 +1,7 @@
 use windows::core::*;
-use windows::ApplicationModel::Core::{
-    CoreApplication, CoreApplicationView, IFrameworkView, IFrameworkViewSource,
-};
-use windows::Foundation::AsyncStatus;
-use windows::Graphics::{Capture::*, DirectX::Direct3D11::*, DirectX::*, DisplayId};
+use windows::Graphics::DirectX::Direct3D11::*;
 use windows::Win32::Graphics::{Direct3D::*, Direct3D11::*, Dxgi::*};
-use windows::Win32::System::{Com::*, WinRT::Direct3D11::*};
-use windows::UI::Core::*;
-
-use windows as Windows;
+use windows::Win32::System::WinRT::Direct3D11::*;
 
 pub fn create_device() -> Result<IDirect3DDevice> {
     let mut ppdevice: Option<ID3D11Device> = None;
@@ -20,7 +13,7 @@ pub fn create_device() -> Result<IDirect3DDevice> {
         D3D_FEATURE_LEVEL_12_2,
     ];
 
-    let r = unsafe {
+    let _r = unsafe {
         D3D11CreateDevice(
             None,
             D3D_DRIVER_TYPE_HARDWARE,
