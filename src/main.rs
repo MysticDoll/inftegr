@@ -1,9 +1,15 @@
 use windows::core::*;
-use windows::Graphics::{Capture::*, DirectX::Direct3D11::*, DirectX::*, Imaging::SoftwareBitmap};
+use windows::Graphics::{Capture::*, DirectX::Direct3D11::*, DirectX::*, Imaging::{
+    SoftwareBitmap,
+    BitmapEncoder,
+    BitmapDecoder,
+    BitmapBounds
+}};
 use windows::Win32::Foundation::*;
 use windows::Win32::System::Com::*;
 use windows::Win32::UI::WindowsAndMessaging::*;
 use windows::Media::Ocr::OcrEngine;
+use windows::Storage::Streams::InMemoryRandomAccessStream;
 
 use crate::directx::*;
 
@@ -55,7 +61,14 @@ async fn main() -> Result<()> {
             .and_then(|frame| frame.Surface())
             .and_then(|surface| SoftwareBitmap::CreateCopyFromSurfaceAsync(&surface)) {
                 if let Ok(bitmap) = iaops_bitmap.await {
-                    if let Ok(iaops_ocr_result) = ocr_engine.RecognizeAsync(&bitmap) {
+                    let trimed_bitmap = trim_software_bitmap(
+                        bitmap,
+                        0,
+                        0,
+                        640,
+                        720
+                    ).await;
+                    if let Ok(iaops_ocr_result) = ocr_engine.RecognizeAsync(&trimed_bitmap) {
                         let ocr_result = iaops_ocr_result.await;
                         if let Ok(lines) = ocr_result
                             .and_then(|r| r.Lines())
@@ -77,4 +90,35 @@ async fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+async fn trim_software_bitmap(bitmap: SoftwareBitmap, x: u32, y: u32, width: u32, height: u32) -> SoftwareBitmap {
+    let mut stream = InMemoryRandomAccessStream::new().unwrap();
+    let mut encoder = BitmapEncoder::CreateAsync(
+        BitmapEncoder::BmpEncoderId().unwrap(),
+        &stream
+    ).unwrap().await.unwrap();
+
+    encoder.SetSoftwareBitmap(&bitmap).unwrap();
+    let transform = encoder.BitmapTransform().unwrap();
+    transform.SetBounds(
+        BitmapBounds {
+            X: x,
+            Y: y,
+            Width: width,
+            Height: height,
+        }
+    ).unwrap();
+
+    encoder.FlushAsync().unwrap().await;
+
+    let decoder = BitmapDecoder::CreateWithIdAsync(
+        BitmapDecoder::BmpDecoderId().unwrap(),
+        &stream
+    )
+        .unwrap()
+        .await
+        .unwrap();
+
+    decoder.GetSoftwareBitmapAsync().unwrap().await.unwrap()
 }
